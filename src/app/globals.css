@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+  background-image:
+    radial-gradient(circle at top left, rgba(11, 119, 196, 0.2), transparent 36%),
+    radial-gradient(circle at top right, rgba(63, 30, 122, 0.12), transparent 28%),
+    linear-gradient(to bottom, #f8fbff, #f1f6ff 45%, #eef4ff);
+}
+
+a {
+  @apply transition-colors;
+}
+
+.page-shell {
+  @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
+}
+
+.card {
+  @apply rounded-3xl border border-slate-200 bg-white shadow-soft;
+}

@@ -1,0 +1,9 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" rx="32" fill="#0B77C4"/>
+  <rect x="16" y="16" width="224" height="44" rx="10" fill="#3F1E7A"/>
+  <text x="128" y="44" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="white">Institut Teknologi Del</text>
+  <path d="M32 92C32 80.9543 40.9543 72 52 72H204C215.046 72 224 80.9543 224 92V180C224 191.046 215.046 200 204 200H52C40.9543 200 32 191.046 32 180V92Z" fill="#0F8ED3"/>
+  <text x="128" y="160" text-anchor="middle" font-family="Georgia, serif" font-size="100" font-weight="700" fill="#F8FAFC">del</text>
+  <rect x="28" y="206" width="200" height="26" rx="8" fill="#3F1E7A"/>
+  <text x="128" y="224" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="white">MARTUHAN - MARROHA - MARBISUK</text>
+</svg>
