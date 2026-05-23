@@ -92,7 +92,7 @@ export default function DeveloperPage() {
       <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-soft">
         <div className="border-b border-slate-200 bg-gradient-to-r from-campus-50 to-slate-50 px-6 py-4">
           <h2 className="text-lg font-semibold text-slate-900">Identitas Kelompok 4</h2>
-          <p className="text-sm text-slate-600">Institut Teknologi Del - Project Requirement Definition</p>
+          <p className="text-sm text-slate-600">Institut Teknologi Del - Pengantar Rekayasa dan Desain</p>
         </div>
         <div className="grid gap-4 p-4 sm:p-6 md:grid-cols-[0.9fr_1.1fr] md:items-center">
           <div className="relative h-52 w-full sm:h-64 rounded-2xl overflow-hidden border border-slate-200">
