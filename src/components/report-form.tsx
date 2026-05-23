@@ -2,6 +2,8 @@
 
 import { FormEvent, useMemo, useState } from "react";
 
+import { campusLocationOptions } from "@/lib/campus-locations";
+
 import { PhotoUploader } from "./photo-uploader";
 
 type ReportSubmitResponse = {
@@ -12,6 +14,7 @@ type ReportSubmitResponse = {
 
 export function ReportForm() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [formStartedAt] = useState(() => Date.now());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -76,6 +79,12 @@ export function ReportForm() {
 
   return (
     <form onSubmit={handleSubmit} method="post" encType="multipart/form-data" className="space-y-6">
+      <input type="hidden" name="form_started_at" value={String(formStartedAt)} />
+      <label className="hidden" aria-hidden="true">
+        <span>Website</span>
+        <input name="website" tabIndex={-1} autoComplete="off" />
+      </label>
+
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-700">Nama pelapor</span>
@@ -93,7 +102,17 @@ export function ReportForm() {
             name="reporter_email"
             type="email"
             disabled={isSubmitting}
-            placeholder="nama@kampus.ac.id"
+            placeholder="nama@itdel.ac.id"
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-campus-500"
+          />
+        </label>
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">NIM / NPM</span>
+          <input
+            name="reporter_student_id"
+            required
+            disabled={isSubmitting}
+            placeholder="Contoh: 1122334455"
             className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-campus-500"
           />
         </label>
@@ -112,13 +131,23 @@ export function ReportForm() {
         </label>
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-700">Lokasi</span>
-          <input
+          <select
             name="location"
             required
             disabled={isSubmitting}
-            placeholder="Gedung A, lantai 2"
             className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-campus-500"
-          />
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Pilih lokasi kampus
+            </option>
+            {campusLocationOptions.map((location) => (
+              <option key={location} value={location}>
+                {location}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500">Pilih lokasi agar laporan lebih valid dan mudah ditindaklanjuti.</p>
         </label>
       </div>
 

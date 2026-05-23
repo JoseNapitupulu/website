@@ -16,6 +16,7 @@ export interface DamageReport {
   description: string;
   category: string;
   reporter_name: string;
+  reporter_student_id: string;
   reporter_email: string | null;
   status: ReportStatus;
   priority: ReportPriority;

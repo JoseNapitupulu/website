@@ -8,6 +8,7 @@ create table if not exists public.damage_reports (
   description text not null,
   category text not null,
   reporter_name text not null,
+  reporter_student_id text not null default '',
   reporter_email text,
   status text not null default 'submitted',
   priority text not null default 'medium',

@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 
+import { isCampusLocation } from "@/lib/campus-locations";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { DamageReport, ReportPriority, ReportStatus, ReportUpdate } from "@/types/report";
 
@@ -7,6 +8,16 @@ const REPORT_PHOTO_BUCKET = "damage-report-photos";
 const MAX_PHOTO_COUNT = 3;
 const MAX_PHOTO_SIZE_BYTES = 3 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MIN_FORM_AGE_MS = 2500;
+const REPORTER_EMAIL_REQUIRED_DOMAIN = "@itdel.ac.id";
+
+function getStringField(value: FormDataEntryValue | null, fieldName: string) {
+  if (typeof value !== "string") {
+    throw new Error(`Field required: ${fieldName}`);
+  }
+
+  return value.trim();
+}
 
 function buildTrackingCode() {
   return `KRS-${randomUUID().slice(0, 8).toUpperCase()}`;
@@ -26,6 +37,7 @@ export type CreateReportInput = {
   description: string;
   category: string;
   reporterName: string;
+  reporterStudentId: string;
   reporterEmail?: string | null;
   priority?: ReportPriority;
   photos?: File[];
@@ -45,7 +57,28 @@ export function parseReportFormData(formData: FormData): CreateReportInput {
   const photos = formData
     .getAll("photos")
     .filter((entry): entry is File => entry instanceof File && entry.size > 0);
-  const reporterEmail = formData.get("reporter_email");
+  const reporterEmail = getStringField(formData.get("reporter_email"), "reporter_email");
+  const website = formData.get("website");
+  const formStartedAtValue = formData.get("form_started_at");
+  const formStartedAt = Number(typeof formStartedAtValue === "string" ? formStartedAtValue : NaN);
+
+  if (typeof website === "string" && website.trim().length > 0) {
+    throw new Error("Validasi gagal.");
+  }
+
+  if (!Number.isFinite(formStartedAt) || Date.now() - formStartedAt < MIN_FORM_AGE_MS) {
+    throw new Error("Form terlalu cepat dikirim. Coba isi ulang beberapa detik lagi.");
+  }
+
+  if (!reporterEmail.toLowerCase().endsWith(REPORTER_EMAIL_REQUIRED_DOMAIN)) {
+    throw new Error(`Gunakan email kampus dengan domain ${REPORTER_EMAIL_REQUIRED_DOMAIN}.`);
+  }
+
+  const location = getRequiredField(formData.get("location"), "location");
+
+  if (!isCampusLocation(location)) {
+    throw new Error("Lokasi tidak valid. Pilih lokasi yang tersedia di daftar.");
+  }
 
   if (photos.length > MAX_PHOTO_COUNT) {
     throw new Error(`Maksimal ${MAX_PHOTO_COUNT} foto per laporan.`);
@@ -63,11 +96,12 @@ export function parseReportFormData(formData: FormData): CreateReportInput {
 
   return {
     title: getRequiredField(formData.get("title"), "title"),
-    location: getRequiredField(formData.get("location"), "location"),
+    location,
     description: getRequiredField(formData.get("description"), "description"),
     category: getRequiredField(formData.get("category"), "category"),
     reporterName: getRequiredField(formData.get("reporter_name"), "reporter_name"),
-    reporterEmail: typeof reporterEmail === "string" ? reporterEmail.trim() || null : null,
+    reporterStudentId: getRequiredField(formData.get("reporter_student_id"), "reporter_student_id"),
+    reporterEmail: reporterEmail || null,
     priority: (formData.get("priority") as ReportPriority | null) ?? "medium",
     photos
   };
@@ -179,6 +213,7 @@ export async function createReport(input: CreateReportInput): Promise<CreateRepo
       description: input.description,
       category: input.category,
       reporter_name: input.reporterName,
+      reporter_student_id: input.reporterStudentId,
       reporter_email: input.reporterEmail ?? null,
       priority: input.priority ?? "medium",
       status: "submitted",
