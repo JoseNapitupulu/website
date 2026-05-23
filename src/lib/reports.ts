@@ -1,6 +1,5 @@
 import { randomUUID } from "crypto";
 
-import { isCampusLocation } from "@/lib/campus-locations";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { DamageReport, ReportPriority, ReportStatus, ReportUpdate } from "@/types/report";
 
@@ -9,8 +8,6 @@ const MAX_PHOTO_COUNT = 3;
 const MAX_PHOTO_SIZE_BYTES = 3 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MIN_FORM_AGE_MS = 2500;
-const REPORTER_EMAIL_REQUIRED_DOMAIN = "@itdel.ac.id";
-
 function getStringField(value: FormDataEntryValue | null, fieldName: string) {
   if (typeof value !== "string") {
     throw new Error(`Field required: ${fieldName}`);
@@ -57,7 +54,7 @@ export function parseReportFormData(formData: FormData): CreateReportInput {
   const photos = formData
     .getAll("photos")
     .filter((entry): entry is File => entry instanceof File && entry.size > 0);
-  const reporterEmail = getStringField(formData.get("reporter_email"), "reporter_email");
+  const reporterEmailValue = formData.get("reporter_email");
   const website = formData.get("website");
   const formStartedAtValue = formData.get("form_started_at");
   const formStartedAt = Number(typeof formStartedAtValue === "string" ? formStartedAtValue : NaN);
@@ -70,15 +67,7 @@ export function parseReportFormData(formData: FormData): CreateReportInput {
     throw new Error("Form terlalu cepat dikirim. Coba isi ulang beberapa detik lagi.");
   }
 
-  if (!reporterEmail.toLowerCase().endsWith(REPORTER_EMAIL_REQUIRED_DOMAIN)) {
-    throw new Error(`Gunakan email kampus dengan domain ${REPORTER_EMAIL_REQUIRED_DOMAIN}.`);
-  }
-
   const location = getRequiredField(formData.get("location"), "location");
-
-  if (!isCampusLocation(location)) {
-    throw new Error("Lokasi tidak valid. Pilih lokasi yang tersedia di daftar.");
-  }
 
   if (photos.length > MAX_PHOTO_COUNT) {
     throw new Error(`Maksimal ${MAX_PHOTO_COUNT} foto per laporan.`);
@@ -100,8 +89,8 @@ export function parseReportFormData(formData: FormData): CreateReportInput {
     description: getRequiredField(formData.get("description"), "description"),
     category: getRequiredField(formData.get("category"), "category"),
     reporterName: getRequiredField(formData.get("reporter_name"), "reporter_name"),
-    reporterStudentId: getRequiredField(formData.get("reporter_student_id"), "reporter_student_id"),
-    reporterEmail: reporterEmail || null,
+    reporterStudentId: typeof formData.get("reporter_student_id") === "string" ? getStringField(formData.get("reporter_student_id"), "reporter_student_id") : "",
+    reporterEmail: typeof reporterEmailValue === "string" ? reporterEmailValue.trim() || null : null,
     priority: (formData.get("priority") as ReportPriority | null) ?? "medium",
     photos
   };
@@ -483,5 +472,71 @@ export async function listReportUpdates(): Promise<ReportUpdate[]> {
   } catch (err) {
     console.error("Unexpected error in listReportUpdates:", err);
     return [];
+  }
+}
+
+export type ListReportsPageInput = {
+  q?: string | null;
+  status?: string | null;
+  priority?: string | null;
+  showInTracking?: boolean | null;
+  limit?: number;
+  offset?: number;
+};
+
+export async function listReportsPage(opts: ListReportsPageInput) {
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase) {
+    return { reports: [], count: 0 } as const;
+  }
+
+  const { q, status, priority, showInTracking, limit = 20, offset = 0 } = opts;
+
+  try {
+    let query = supabase.from("damage_reports").select("*", { count: "exact" }).order("created_at", { ascending: false });
+
+    if (status && status !== "all") {
+      query = query.eq("status", status);
+    }
+
+    if (priority && priority !== "all") {
+      query = query.eq("priority", priority);
+    }
+
+    if (typeof showInTracking === "boolean") {
+      query = query.eq("show_in_tracking", showInTracking);
+    }
+
+    if (q && q.trim().length > 0) {
+      const term = q.trim();
+      // search across several text fields using ilike OR
+      const ilikeTerm = `%${term}%`;
+      const orParts = [
+        `title.ilike.${ilikeTerm}`,
+        `location.ilike.${ilikeTerm}`,
+        `tracking_code.ilike.${ilikeTerm}`,
+        `reporter_name.ilike.${ilikeTerm}`,
+        `reporter_student_id.ilike.${ilikeTerm}`
+      ];
+
+      query = query.or(orParts.join(","));
+    }
+
+    // apply range for pagination
+    const start = offset;
+    const end = offset + limit - 1;
+
+    const { data, error, count } = await query.range(start, end);
+
+    if (error) {
+      console.error("Supabase listReportsPage error:", error);
+      return { reports: [], count: 0 } as const;
+    }
+
+    return { reports: (data ?? []) as DamageReport[], count: count ?? 0 } as const;
+  } catch (err) {
+    console.error("Unexpected error in listReportsPage:", err);
+    return { reports: [], count: 0 } as const;
   }
 }

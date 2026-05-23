@@ -2,8 +2,6 @@
 
 import { FormEvent, useMemo, useState } from "react";
 
-import { campusLocationOptions } from "@/lib/campus-locations";
-
 import { PhotoUploader } from "./photo-uploader";
 
 type ReportSubmitResponse = {
@@ -97,20 +95,19 @@ export function ReportForm() {
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">Email</span>
+          <span className="text-sm font-medium text-slate-700">Email (opsional)</span>
           <input
             name="reporter_email"
             type="email"
             disabled={isSubmitting}
-            placeholder="nama@itdel.ac.id"
+            placeholder="nama@email.com"
             className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-campus-500"
           />
         </label>
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">NIM / NPM</span>
+          <span className="text-sm font-medium text-slate-700">NIM / NPM (opsional)</span>
           <input
             name="reporter_student_id"
-            required
             disabled={isSubmitting}
             placeholder="Contoh: 1122334455"
             className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-campus-500"
@@ -131,23 +128,14 @@ export function ReportForm() {
         </label>
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-700">Lokasi</span>
-          <select
+          <input
             name="location"
             required
             disabled={isSubmitting}
             className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-campus-500"
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Pilih lokasi kampus
-            </option>
-            {campusLocationOptions.map((location) => (
-              <option key={location} value={location}>
-                {location}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-slate-500">Pilih lokasi agar laporan lebih valid dan mudah ditindaklanjuti.</p>
+            placeholder="Tulis lokasi sendiri, misalnya Gedung A lantai 2"
+          />
+          <p className="text-xs text-slate-500">Tuliskan lokasi sejelas mungkin agar admin mudah menindaklanjuti.</p>
         </label>
       </div>
 

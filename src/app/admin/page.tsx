@@ -1,20 +1,25 @@
 import { redirect } from "next/navigation";
 
-import { StatusBadge } from "@/components/status-badge";
+import AdminReportsPanel from "@/components/admin-reports-panel";
 import { getAuthenticatedAdmin } from "@/lib/admin-auth";
 import { listReportUpdates, listReportsWithError } from "@/lib/reports";
-import type { ReportStatus } from "@/types/report";
+import type { ReportPriority, ReportStatus } from "@/types/report";
 
 export const dynamic = "force-dynamic";
 
-const statusOptions: Array<{ value: ReportStatus; label: string }> = [
-  { value: "submitted", label: "Masuk" },
-  { value: "in_review", label: "Ditinjau" },
-  { value: "assigned", label: "Diteruskan" },
-  { value: "in_progress", label: "Dikerjakan" },
-  { value: "resolved", label: "Selesai" },
-  { value: "rejected", label: "Ditolak" }
-];
+
+function getStatusWeight(status: ReportStatus) {
+  const order: Record<ReportStatus, number> = {
+    submitted: 0,
+    in_review: 1,
+    assigned: 2,
+    in_progress: 3,
+    resolved: 4,
+    rejected: 5
+  };
+
+  return order[status];
+}
 
 type AdminPageProps = {
   searchParams: Promise<{ updated?: string; error?: string; deleted?: string; visibility?: string; noteDeleted?: string }>;
@@ -64,8 +69,27 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const stats = {
     total: reports.length,
     open: reports.filter((report) => report.status !== "resolved" && report.status !== "rejected").length,
-    resolved: reports.filter((report) => report.status === "resolved").length
+    resolved: reports.filter((report) => report.status === "resolved").length,
+    highPriority: reports.filter((report) => report.priority === "high").length,
+    hidden: reports.filter((report) => !report.show_in_tracking).length
   };
+
+  const orderedReports = [...reports].sort((left, right) => {
+    const statusDifference = getStatusWeight(left.status) - getStatusWeight(right.status);
+
+    if (statusDifference !== 0) {
+      return statusDifference;
+    }
+
+    const priorityOrder: Record<ReportPriority, number> = { high: 0, medium: 1, low: 2 };
+    const priorityDifference = priorityOrder[left.priority] - priorityOrder[right.priority];
+
+    if (priorityDifference !== 0) {
+      return priorityDifference;
+    }
+
+    return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
+  });
 
   return (
     <div className="space-y-6">
@@ -124,11 +148,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         {[
           { label: "Total laporan", value: stats.total },
           { label: "Masih diproses", value: stats.open },
-          { label: "Selesai", value: stats.resolved }
+          { label: "Prioritas tinggi", value: stats.highPriority },
+          { label: "Disembunyikan", value: stats.hidden }
         ].map((item) => (
           <div key={item.label} className="card p-5">
             <p className="text-sm text-slate-500">{item.label}</p>
@@ -139,98 +164,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
       <div className="card overflow-hidden">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h3 className="font-semibold text-slate-950">Laporan terbaru</h3>
+          <h3 className="font-semibold text-slate-950">Antrian laporan</h3>
+          <p className="mt-1 text-sm text-slate-500">Prioritas tinggi dan status aktif muncul lebih dulu.</p>
         </div>
-        <div className="divide-y divide-slate-200">
-          {reports.slice(0, 10).map((report) => (
-            <div key={report.id} className="flex flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="font-medium text-slate-950">{report.title}</p>
-                <p className="text-sm text-slate-500">{report.location}</p>
-              </div>
-              <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
-                <StatusBadge status={report.status} />
-                <form action="/api/admin/reports/status" method="post" className="grid gap-2 md:grid-cols-[180px_220px_auto]">
-                  <input type="hidden" name="report_id" value={report.id} />
-                  <select
-                    name="status"
-                    defaultValue={report.status}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-campus-500"
-                  >
-                    {statusOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    name="note"
-                    placeholder="Catatan admin (opsional)"
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-campus-500"
-                  />
-                  <button
-                    type="submit"
-                    className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
-                  >
-                    Simpan
-                  </button>
-                </form>
-                <form action="/api/admin/reports/visibility" method="post" className="md:self-end">
-                  <input type="hidden" name="report_id" value={report.id} />
-                  <input type="hidden" name="show_in_tracking" value={report.show_in_tracking ? "0" : "1"} />
-                  <button
-                    type="submit"
-                    className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${report.show_in_tracking
-                      ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                      : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
-                  >
-                    {report.show_in_tracking ? "Sembunyikan dari tracking" : "Tampilkan di tracking"}
-                  </button>
-                </form>
-                {report.status === "resolved" ? (
-                  <form action="/api/admin/reports/delete" method="post" className="md:self-end">
-                    <input type="hidden" name="report_id" value={report.id} />
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
-                    >
-                      Hapus laporan selesai
-                    </button>
-                  </form>
-                ) : null}
-
-                {updatesByReport[report.id]?.length ? (
-                  <div className="mt-2 w-full space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:w-[560px]">
-                    <h4 className="text-sm font-semibold text-slate-900">Catatan admin</h4>
-                    <div className="space-y-2">
-                      {updatesByReport[report.id].map((update) => (
-                        <div key={update.id} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <StatusBadge status={update.status} />
-                            <span className="text-xs text-slate-500">{new Date(update.created_at).toLocaleString("id-ID")}</span>
-                          </div>
-                          <p className="mt-2 text-slate-700">{update.note || "Status diperbarui admin."}</p>
-                          <form action="/api/admin/reports/notes/delete" method="post" className="mt-3">
-                            <input type="hidden" name="update_id" value={update.id} />
-                            <button
-                              type="submit"
-                              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
-                            >
-                              Hapus catatan
-                            </button>
-                          </form>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          ))}
-          {reports.length === 0 ? (
-            <div className="px-6 py-8 text-sm text-slate-500">Belum ada laporan masuk.</div>
-          ) : null}
-        </div>
+        <AdminReportsPanel initialReports={orderedReports.slice(0, 20)} updatesByReport={updatesByReport} />
       </div>
     </div>
   );
