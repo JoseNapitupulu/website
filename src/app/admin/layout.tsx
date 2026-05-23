@@ -1,11 +1,9 @@
+export const dynamic = "force-dynamic";
+
 import { AdminLiveMonitor } from "@/components/admin-live-monitor";
+import { AdminNavigation } from "@/components/admin-navigation";
 import { listReportsWithError } from "@/lib/reports";
 import Link from "next/link";
-
-const adminLinks = [
-  { href: "/admin", label: "Ringkasan" },
-  { href: "/admin/reports", label: "Daftar laporan" }
-];
 
 export default async function AdminLayout({
   children
@@ -36,6 +34,9 @@ export default async function AdminLayout({
               <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1">Triage cepat</span>
               <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1">Notifikasi suara</span>
               <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1">Tracking publish control</span>
+              <Link href="/admin/reports" className="rounded-full border border-white/15 bg-white/10 px-3 py-1 transition hover:bg-white/20">
+                Buka daftar laporan
+              </Link>
             </div>
           </div>
 
@@ -50,13 +51,7 @@ export default async function AdminLayout({
             <h2 className="text-xl font-semibold text-slate-950">Navigasi cepat</h2>
           </div>
 
-          <nav className="mt-4 space-y-2 text-sm font-medium text-slate-700">
-            {adminLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="block rounded-xl px-3 py-2 transition hover:bg-slate-100">
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <AdminNavigation />
 
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">

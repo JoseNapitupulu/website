@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+
+import { getAuthenticatedAdmin } from "@/lib/admin-auth";
 
 type AdminLoginPageProps = {
   searchParams: Promise<{ error?: string; next?: string; signedOut?: string }>;
@@ -11,6 +14,11 @@ export const metadata: Metadata = {
 export default async function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
   const { error, next: nextPath, signedOut } = await searchParams;
   const redirectTo = typeof nextPath === "string" && nextPath.startsWith("/") ? nextPath : "/admin";
+  const auth = await getAuthenticatedAdmin();
+
+  if (auth) {
+    redirect(redirectTo);
+  }
 
   return (
     <section className="page-shell flex min-h-[calc(100vh-5rem)] items-center py-12">
