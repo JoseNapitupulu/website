@@ -17,11 +17,11 @@ const statusOptions: Array<{ value: ReportStatus; label: string }> = [
 ];
 
 type AdminPageProps = {
-  searchParams: Promise<{ updated?: string; error?: string; deleted?: string }>;
+  searchParams: Promise<{ updated?: string; error?: string; deleted?: string; visibility?: string }>;
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const { updated, error: actionError, deleted } = await searchParams;
+  const { updated, error: actionError, deleted, visibility } = await searchParams;
   const auth = await getAuthenticatedAdmin();
 
   if (!auth) {
@@ -91,6 +91,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </div>
       ) : null}
 
+      {visibility === "1" ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Laporan berhasil ditampilkan di tracking.
+        </div>
+      ) : null}
+
+      {visibility === "0" ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Laporan berhasil disembunyikan dari tracking.
+        </div>
+      ) : null}
+
       {actionError ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           Gagal memperbarui status: {actionError}
@@ -146,6 +158,18 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
                   >
                     Simpan
+                  </button>
+                </form>
+                <form action="/api/admin/reports/visibility" method="post" className="md:self-end">
+                  <input type="hidden" name="report_id" value={report.id} />
+                  <input type="hidden" name="show_in_tracking" value={report.show_in_tracking ? "0" : "1"} />
+                  <button
+                    type="submit"
+                    className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${report.show_in_tracking
+                      ? "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                      : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
+                  >
+                    {report.show_in_tracking ? "Sembunyikan dari tracking" : "Tampilkan di tracking"}
                   </button>
                 </form>
                 {report.status === "resolved" ? (

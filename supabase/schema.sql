@@ -12,6 +12,7 @@ create table if not exists public.damage_reports (
   status text not null default 'submitted',
   priority text not null default 'medium',
   photo_urls text[] not null default '{}',
+  show_in_tracking boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

@@ -78,6 +78,30 @@ export async function listReports(): Promise<DamageReport[]> {
   }
 }
 
+export async function listVisibleReports(): Promise<DamageReport[]> {
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from("damage_reports")
+      .select("*")
+      .eq("show_in_tracking", true)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Supabase listVisibleReports error:", error);
+      return [];
+    }
+
+    return (data ?? []) as DamageReport[];
+  } catch (err) {
+    console.error("Unexpected error in listVisibleReports:", err);
+    return [];
+  }
+}
+
 export async function getReportByTrackingCode(trackingCode: string) {
   const supabase = createSupabaseAdminClient();
 
@@ -141,7 +165,8 @@ export async function createReport(input: CreateReportInput): Promise<CreateRepo
       reporter_email: input.reporterEmail ?? null,
       priority: input.priority ?? "medium",
       status: "submitted",
-      photo_urls: []
+      photo_urls: [],
+      show_in_tracking: true
     })
     .select()
     .single();
@@ -232,6 +257,27 @@ export async function updateReportStatus(reportId: string, status: ReportStatus,
 
   if (updateInsert.error) {
     throw updateInsert.error;
+  }
+
+  return updated as DamageReport;
+}
+
+export async function updateReportVisibility(reportId: string, showInTracking: boolean) {
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase) {
+    throw new Error("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+  }
+
+  const { data: updated, error } = await supabase
+    .from("damage_reports")
+    .update({ show_in_tracking: showInTracking, updated_at: new Date().toISOString() })
+    .eq("id", reportId)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
   }
 
   return updated as DamageReport;

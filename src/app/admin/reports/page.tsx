@@ -29,7 +29,8 @@ export default async function AdminReportsPage() {
               <th className="px-6 py-3 font-medium">Judul</th>
               <th className="px-6 py-3 font-medium">Lokasi</th>
               <th className="px-6 py-3 font-medium">Status</th>
-              <th className="px-6 py-3 font-medium">Tracking</th>
+              <th className="px-6 py-3 font-medium">Tampil di tracking</th>
+              <th className="px-6 py-3 font-medium">Kode tracking</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 bg-white">
@@ -41,13 +42,20 @@ export default async function AdminReportsPage() {
                   <StatusBadge status={report.status} />
                 </td>
                 <td className="px-6 py-4 text-campus-700">
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${report.show_in_tracking ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}
+                  >
+                    {report.show_in_tracking ? "Ya" : "Tidak"}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-campus-700">
                   <Link href={`/tracking?code=${report.tracking_code}`}>{report.tracking_code}</Link>
                 </td>
               </tr>
             ))}
             {reports.length === 0 ? (
               <tr>
-                <td className="px-6 py-8 text-slate-500" colSpan={4}>
+                <td className="px-6 py-8 text-slate-500" colSpan={5}>
                   Belum ada laporan yang tersimpan di database.
                 </td>
               </tr>

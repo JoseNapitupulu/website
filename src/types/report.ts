@@ -20,6 +20,7 @@ export interface DamageReport {
   status: ReportStatus;
   priority: ReportPriority;
   photo_urls: string[];
+  show_in_tracking: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { StatusBadge } from "@/components/status-badge";
-import { listReports, listReportUpdates } from "@/lib/reports";
+import { getReportByTrackingCode, listReportUpdates, listVisibleReports } from "@/lib/reports";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +10,9 @@ type TrackingPageProps = {
 
 export default async function TrackingPage({ searchParams }: TrackingPageProps) {
   const { code, submitted, uploaded, failed, uploadError } = await searchParams;
-  const reports = await listReports();
+  const reports = await listVisibleReports();
   const updates = await listReportUpdates();
+  const hiddenReport = code ? await getReportByTrackingCode(code.trim()) : null;
   const highlightedCode = code?.trim() || null;
   const updatesByReport = updates.reduce<Record<string, typeof updates>>((acc, update) => {
     if (!acc[update.report_id]) {
@@ -48,9 +49,15 @@ export default async function TrackingPage({ searchParams }: TrackingPageProps) 
         </span>
         <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Laporan kerusakan kampus</h1>
         <p className="text-slate-600">
-          Semua mahasiswa dapat melihat laporan yang sudah masuk beserta status penanganannya.
+          Semua mahasiswa dapat melihat laporan yang memang ditampilkan admin beserta status penanganannya.
         </p>
       </div>
+
+      {highlightedCode && !reports.some((report) => report.tracking_code === highlightedCode) && hiddenReport ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Laporan dengan kode ini sedang disembunyikan dari tracking oleh admin.
+        </div>
+      ) : null}
 
       <div className="space-y-4">
         {reports.length === 0 ? (
