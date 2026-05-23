@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { StatusBadge } from "@/components/status-badge";
 import { getAuthenticatedAdmin } from "@/lib/admin-auth";
-import { listReportsWithError } from "@/lib/reports";
+import { listReportUpdates, listReportsWithError } from "@/lib/reports";
 import type { ReportStatus } from "@/types/report";
 
 export const dynamic = "force-dynamic";
@@ -17,11 +17,11 @@ const statusOptions: Array<{ value: ReportStatus; label: string }> = [
 ];
 
 type AdminPageProps = {
-  searchParams: Promise<{ updated?: string; error?: string; deleted?: string; visibility?: string }>;
+  searchParams: Promise<{ updated?: string; error?: string; deleted?: string; visibility?: string; noteDeleted?: string }>;
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
-  const { updated, error: actionError, deleted, visibility } = await searchParams;
+  const { updated, error: actionError, deleted, visibility, noteDeleted } = await searchParams;
   const auth = await getAuthenticatedAdmin();
 
   if (!auth) {
@@ -29,6 +29,15 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const { reports, error } = await listReportsWithError();
+  const updates = await listReportUpdates();
+  const updatesByReport = updates.reduce<Record<string, typeof updates>>((acc, update) => {
+    if (!acc[update.report_id]) {
+      acc[update.report_id] = [];
+    }
+
+    acc[update.report_id].push(update);
+    return acc;
+  }, {});
 
   if (error) {
     return (
@@ -100,6 +109,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       {visibility === "0" ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Laporan berhasil disembunyikan dari tracking.
+        </div>
+      ) : null}
+
+      {noteDeleted === "1" ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Catatan admin berhasil dihapus.
         </div>
       ) : null}
 
@@ -182,6 +197,32 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       Hapus laporan selesai
                     </button>
                   </form>
+                ) : null}
+
+                {updatesByReport[report.id]?.length ? (
+                  <div className="mt-2 w-full space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:w-[560px]">
+                    <h4 className="text-sm font-semibold text-slate-900">Catatan admin</h4>
+                    <div className="space-y-2">
+                      {updatesByReport[report.id].map((update) => (
+                        <div key={update.id} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <StatusBadge status={update.status} />
+                            <span className="text-xs text-slate-500">{new Date(update.created_at).toLocaleString("id-ID")}</span>
+                          </div>
+                          <p className="mt-2 text-slate-700">{update.note || "Status diperbarui admin."}</p>
+                          <form action="/api/admin/reports/notes/delete" method="post" className="mt-3">
+                            <input type="hidden" name="update_id" value={update.id} />
+                            <button
+                              type="submit"
+                              className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
+                            >
+                              Hapus catatan
+                            </button>
+                          </form>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : null}
               </div>
             </div>

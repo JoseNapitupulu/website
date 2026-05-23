@@ -4,6 +4,9 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { DamageReport, ReportPriority, ReportStatus, ReportUpdate } from "@/types/report";
 
 const REPORT_PHOTO_BUCKET = "damage-report-photos";
+const MAX_PHOTO_COUNT = 3;
+const MAX_PHOTO_SIZE_BYTES = 3 * 1024 * 1024;
+const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 function buildTrackingCode() {
   return `KRS-${randomUUID().slice(0, 8).toUpperCase()}`;
@@ -43,6 +46,20 @@ export function parseReportFormData(formData: FormData): CreateReportInput {
     .getAll("photos")
     .filter((entry): entry is File => entry instanceof File && entry.size > 0);
   const reporterEmail = formData.get("reporter_email");
+
+  if (photos.length > MAX_PHOTO_COUNT) {
+    throw new Error(`Maksimal ${MAX_PHOTO_COUNT} foto per laporan.`);
+  }
+
+  for (const photo of photos) {
+    if (!ALLOWED_PHOTO_TYPES.has(photo.type)) {
+      throw new Error(`Format foto tidak didukung: ${photo.name}. Gunakan JPG, PNG, atau WEBP.`);
+    }
+
+    if (photo.size > MAX_PHOTO_SIZE_BYTES) {
+      throw new Error(`Ukuran foto terlalu besar: ${photo.name}. Maksimal 3MB per foto.`);
+    }
+  }
 
   return {
     title: getRequiredField(formData.get("title"), "title"),
@@ -281,6 +298,31 @@ export async function updateReportVisibility(reportId: string, showInTracking: b
   }
 
   return updated as DamageReport;
+}
+
+export async function deleteReportUpdateById(updateId: string) {
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase) {
+    throw new Error("Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+  }
+
+  const { data, error } = await supabase
+    .from("report_updates")
+    .delete()
+    .eq("id", updateId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error("Catatan tidak ditemukan.");
+  }
+
+  return data;
 }
 
 export async function deleteReportById(reportId: string) {
