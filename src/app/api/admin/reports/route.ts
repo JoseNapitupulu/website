@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedAdmin } from "@/lib/admin-auth";
-import { listReportsPage } from "@/lib/reports";
+import { listReportUpdatesByReportIds, listReportsPage } from "@/lib/reports";
 
 export async function GET(req: Request) {
   const auth = await getAuthenticatedAdmin();
@@ -24,6 +24,15 @@ export async function GET(req: Request) {
   const showInTracking = showInTrackingParam === null ? null : showInTrackingParam === "1" || showInTrackingParam === "true";
 
   const { reports, count } = await listReportsPage({ q, status, priority, showInTracking, limit, offset });
+  const updates = await listReportUpdatesByReportIds(reports.map((report) => report.id));
+  const updatesByReport = updates.reduce<Record<string, typeof updates>>((acc, update) => {
+    if (!acc[update.report_id]) {
+      acc[update.report_id] = [];
+    }
 
-  return NextResponse.json({ reports, count, page, limit });
+    acc[update.report_id].push(update);
+    return acc;
+  }, {});
+
+  return NextResponse.json({ reports, count, page, limit, updatesByReport });
 }

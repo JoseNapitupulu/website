@@ -475,6 +475,30 @@ export async function listReportUpdates(): Promise<ReportUpdate[]> {
   }
 }
 
+export async function listReportUpdatesByReportIds(reportIds: string[]): Promise<ReportUpdate[]> {
+  const supabase = createSupabaseAdminClient();
+
+  if (!supabase || reportIds.length === 0) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from("report_updates")
+      .select("*")
+      .in("report_id", reportIds)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Supabase listReportUpdatesByReportIds error:", error);
+      return [];
+    }
+
+    return (data ?? []) as ReportUpdate[];
+  } catch (err) {
+    console.error("Unexpected error in listReportUpdatesByReportIds:", err);
+    return [];
+  }
+}
+
 export type ListReportsPageInput = {
   q?: string | null;
   status?: string | null;
@@ -509,18 +533,18 @@ export async function listReportsPage(opts: ListReportsPageInput) {
     }
 
     if (q && q.trim().length > 0) {
-      const term = q.trim();
-      // search across several text fields using ilike OR
+      const term = q.trim().replace(/,/g, " ");
       const ilikeTerm = `%${term}%`;
-      const orParts = [
-        `title.ilike.${ilikeTerm}`,
-        `location.ilike.${ilikeTerm}`,
-        `tracking_code.ilike.${ilikeTerm}`,
-        `reporter_name.ilike.${ilikeTerm}`,
-        `reporter_student_id.ilike.${ilikeTerm}`
-      ];
 
-      query = query.or(orParts.join(","));
+      query = query.or(
+        [
+          `title.ilike.${ilikeTerm}`,
+          `location.ilike.${ilikeTerm}`,
+          `tracking_code.ilike.${ilikeTerm}`,
+          `reporter_name.ilike.${ilikeTerm}`,
+          `reporter_student_id.ilike.${ilikeTerm}`
+        ].join(",")
+      );
     }
 
     // apply range for pagination

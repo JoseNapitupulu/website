@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import AdminReportsPanel from "@/components/admin-reports-panel";
 import { getAuthenticatedAdmin } from "@/lib/admin-auth";
-import { listReportUpdates, listReportsWithError } from "@/lib/reports";
+import { listReportUpdatesByReportIds, listReportsWithError } from "@/lib/reports";
 import type { ReportPriority, ReportStatus } from "@/types/report";
 
 export const dynamic = "force-dynamic";
@@ -34,15 +34,6 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const { reports, error } = await listReportsWithError();
-  const updates = await listReportUpdates();
-  const updatesByReport = updates.reduce<Record<string, typeof updates>>((acc, update) => {
-    if (!acc[update.report_id]) {
-      acc[update.report_id] = [];
-    }
-
-    acc[update.report_id].push(update);
-    return acc;
-  }, {});
 
   if (error) {
     return (
@@ -90,6 +81,17 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
     return new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime();
   });
+
+  const pageReports = orderedReports.slice(0, 20);
+  const updates = await listReportUpdatesByReportIds(pageReports.map((report) => report.id));
+  const updatesByReport = updates.reduce<Record<string, typeof updates>>((acc, update) => {
+    if (!acc[update.report_id]) {
+      acc[update.report_id] = [];
+    }
+
+    acc[update.report_id].push(update);
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-6">
@@ -167,7 +169,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <h3 className="font-semibold text-slate-950">Antrian laporan</h3>
           <p className="mt-1 text-sm text-slate-500">Prioritas tinggi dan status aktif muncul lebih dulu.</p>
         </div>
-        <AdminReportsPanel initialReports={orderedReports.slice(0, 20)} updatesByReport={updatesByReport} />
+        <AdminReportsPanel initialReports={pageReports} initialUpdatesByReport={updatesByReport} />
       </div>
     </div>
   );
