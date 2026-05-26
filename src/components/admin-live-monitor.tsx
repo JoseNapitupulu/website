@@ -25,6 +25,11 @@ export function AdminLiveMonitor({ initialCount }: AdminLiveMonitorProps) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const lastCountRef = useRef(initialCount);
   const announcementTimerRef = useRef<number | null>(null);
+  const enabledRef = useRef(enabled);
+
+  useEffect(() => {
+    enabledRef.current = enabled;
+  }, [enabled]);
 
   const toneEnabledLabel = useMemo(() => (enabled ? "Suara aktif" : "Suara mati"), [enabled]);
 
@@ -110,7 +115,7 @@ export function AdminLiveMonitor({ initialCount }: AdminLiveMonitorProps) {
 
         announce(message);
 
-        if (enabled) {
+        if (enabledRef.current) {
           playTone();
         }
       }
@@ -121,15 +126,23 @@ export function AdminLiveMonitor({ initialCount }: AdminLiveMonitorProps) {
     } catch {
       setStatus("error");
     }
-  }, [enabled, initialCount]);
+  }, [initialCount]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    pollLiveStatus();
-    const intervalId = window.setInterval(pollLiveStatus, 20000);
+    let cancelled = false;
+
+    const runPoll = async () => {
+      if (cancelled) return;
+      await pollLiveStatus();
+    };
+
+    void runPoll();
+    const intervalId = window.setInterval(runPoll, 15000);
 
     return () => {
+      cancelled = true;
       window.clearInterval(intervalId);
     };
   }, [enabled, pollLiveStatus]);
@@ -170,13 +183,13 @@ export function AdminLiveMonitor({ initialCount }: AdminLiveMonitorProps) {
           type="button"
           onClick={async () => {
             await unlockAudio();
-            setEnabled((current) => !current);
+            setEnabled(true);
             setStatus("listening");
             setAnnouncement((current) => current ?? "Suara notifikasi siap");
           }}
           className="rounded-lg bg-white px-3 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
         >
-          {enabled ? "Matikan bunyi" : "Aktifkan bunyi"}
+          {enabled ? "Bunyi aktif" : "Aktifkan bunyi"}
         </button>
         <button
           type="button"
