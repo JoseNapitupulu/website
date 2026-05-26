@@ -114,23 +114,35 @@ export default function AdminReportsPanel({ initialReports = [], initialUpdatesB
                   return (
                     <div className="flex items-center gap-1">
                       {start > 1 ? (
-                        <button onClick={() => setPage(1)} className="rounded-lg border px-2 py-1 text-sm">
+                        <button
+                          onClick={() => setPage(1)}
+                          aria-label="Ke halaman 1"
+                          className="inline-flex items-center justify-center rounded-md border px-2 py-1 text-sm transition hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                           1
                         </button>
                       ) : null}
-                      {start > 2 ? <div className="px-2">…</div> : null}
+                      {start > 2 ? <span className="px-2 text-slate-400">…</span> : null}
                       {pages.map((p) => (
                         <button
                           key={p}
                           onClick={() => setPage(p)}
-                          className={`rounded-lg border px-2 py-1 text-sm ${p === page ? "bg-slate-700 text-white" : ""}`}
+                          aria-current={p === page ? "page" : undefined}
+                          aria-label={`Ke halaman ${p}`}
+                          className={`inline-flex items-center justify-center rounded-md border px-3 py-1 text-sm transition ${
+                            p === page ? "bg-slate-900 text-white border-slate-900" : "hover:bg-slate-50"
+                          }`}
                         >
                           {p}
                         </button>
                       ))}
-                      {end < totalPages - 1 ? <div className="px-2">…</div> : null}
+                      {end < totalPages - 1 ? <span className="px-2 text-slate-400">…</span> : null}
                       {end < totalPages ? (
-                        <button onClick={() => setPage(totalPages)} className="rounded-lg border px-2 py-1 text-sm">
+                        <button
+                          onClick={() => setPage(totalPages)}
+                          aria-label={`Ke halaman ${totalPages}`}
+                          className="inline-flex items-center justify-center rounded-md border px-2 py-1 text-sm transition hover:bg-slate-100"
+                        >
                           {totalPages}
                         </button>
                       ) : null}

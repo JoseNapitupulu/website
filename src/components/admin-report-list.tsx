@@ -72,9 +72,17 @@ export default function AdminReportList({ reports, updatesByReport, loading }: P
   return (
     <div className="divide-y divide-slate-200">
       {ordered.slice(0, 100).map((report) => (
-        <div key={report.id} className={`flex flex-col gap-4 px-6 py-4 md:flex-row md:items-start md:justify-between ${report.priority === "high" ? "ring-2 ring-rose-50" : ""}`}>
+        <div
+          key={report.id}
+          className={`flex flex-col gap-4 px-6 py-4 md:flex-row md:items-start md:justify-between transition-shadow ${
+            report.priority === "high" ? "ring-2 ring-rose-100 bg-rose-50 shadow-sm" : "bg-white"
+          }`}
+        >
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{report.tracking_code}</p>
+            <div className="flex items-center gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{report.tracking_code}</p>
+              {report.priority === "high" ? <span className="text-xs font-semibold text-rose-700">Prioritas Tinggi</span> : null}
+            </div>
             <p className="mt-1 font-medium text-slate-950">{report.title}</p>
             <p className="text-sm text-slate-500">{report.location}</p>
             <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-slate-600">
