@@ -7,8 +7,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Lapor Kerusakan Kampus",
   description: "Sistem pelaporan kerusakan fasilitas kampus dengan tracking status dan dashboard admin.",
+  alternates: {
+    canonical: "/"
+  },
   keywords: ["lapor kerusakan", "kampus", "laporan fasilitas", "pelaporan kampus", "maintenance"],
-  authors: [{ name: "IT Del", url: "https://it.del.example" }],
+  authors: [{ name: "IT Del", url: "https://laponsitdel.ifs25026.fun/" }],
   robots: {
     index: true,
     follow: true,
@@ -37,7 +40,7 @@ export const metadata: Metadata = {
     description: "Laporkan kerusakan fasilitas kampus dan lacak status penanganan.",
     images: ["/it-del-logo.png"]
   },
-  metadataBase: process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL) : undefined
+  metadataBase: process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL) : new URL("https://laponsitdel.ifs25026.fun/")
 };
 
 export default function RootLayout({
