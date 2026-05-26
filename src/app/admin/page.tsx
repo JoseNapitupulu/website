@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import AdminReportsPanel from "@/components/admin-reports-panel";
+import { AdminShell } from "@/components/admin-shell";
 import { getAuthenticatedAdmin } from "@/lib/admin-auth";
 import { listReportUpdatesByReportIds, listReportsWithError } from "@/lib/reports";
 import type { ReportPriority, ReportStatus } from "@/types/report";
@@ -94,7 +95,13 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }, {});
 
   return (
-    <div className="space-y-6">
+    <AdminShell
+      totalReports={stats.total}
+      openReports={stats.open}
+      highPriorityReports={stats.highPriority}
+      hiddenReports={stats.hidden}
+    >
+      <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <span className="inline-flex rounded-full bg-campus-100 px-4 py-2 text-sm font-semibold text-campus-700">
@@ -171,6 +178,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         </div>
         <AdminReportsPanel initialReports={pageReports} initialUpdatesByReport={updatesByReport} />
       </div>
-    </div>
+      </div>
+    </AdminShell>
   );
 }
