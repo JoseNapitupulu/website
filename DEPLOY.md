@@ -41,3 +41,14 @@ npm run build
 - Troubleshooting:
   - If TypeScript deprecation warnings appear for `ignoreDeprecations`, remove `baseUrl` or align local TS version.
   - Check Supabase RLS policies in `supabase/schema.sql` if access errors occur.
+ 
+- Generating favicons from project logo:
+
+  This repo includes `public/it-del-logo.jpg`. To create properly sized favicon files (PNG + ICO), run:
+
+  ```bash
+  npm ci
+  npm run generate:favicons
+  ```
+
+  This will produce `public/favicon-16.png`, `public/favicon-32.png`, `public/favicon-180.png`, `public/apple-touch-icon.png`, and `public/favicon.ico`.

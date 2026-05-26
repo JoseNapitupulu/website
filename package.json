@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "check:supabase": "node -e \"if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.SUPABASE_SERVICE_ROLE_KEY){console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'); process.exit(1)} else {console.log('Supabase env OK')}\""
+    "check:supabase": "node -e \"if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.SUPABASE_SERVICE_ROLE_KEY){console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'); process.exit(1)} else {console.log('Supabase env OK')}\"",
+    "generate:favicons": "node scripts/generate-favicons.js"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -23,7 +24,9 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^9.26.0",
     "eslint-config-next": "^15.3.0",
+    "png-to-ico": "^1.0.7",
     "postcss": "^8.5.3",
+    "sharp": "^0.32.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3"
   }

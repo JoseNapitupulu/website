@@ -8,6 +8,12 @@ export const metadata: Metadata = {
   title: "Lapor Kerusakan Kampus",
   description: "Sistem pelaporan kerusakan fasilitas kampus dengan tracking status dan dashboard admin."
 };
+// Add favicon/icon entries using the provided logo in /public
+metadata.icons = [
+  { rel: "icon", url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+  { rel: "icon", url: "/it-del-logo.png", sizes: "64x64", type: "image/png" },
+  { rel: "apple-touch-icon", url: "/apple-touch-icon.png", sizes: "180x180" }
+];
 
 export default function RootLayout({
   children
