@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { listVisibleReports } from "@/lib/reports";
 
 export async function GET() {
-  const base = process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "") : "";
+  const base = (process.env.NEXT_PUBLIC_APP_URL || "https://laponsitdel.ifs25026.fun").replace(/\/$/, "");
 
-  const staticUrls = ["/", "/laporan", "/tracking", "/developer", "/admin"];
+  const staticUrls = ["/", "/laporan", "/tracking", "/developer"];
 
   const urls = staticUrls.map((p) => ({ loc: `${base}${p}`, lastmod: new Date().toISOString() }));
 
