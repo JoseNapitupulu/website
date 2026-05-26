@@ -7,6 +7,7 @@ import type { DamageReport, ReportUpdate } from "@/types/report";
 type Props = {
   reports: DamageReport[];
   updatesByReport: Record<string, ReportUpdate[]>;
+  loading?: boolean;
 };
 
 const priorityLabels: Record<string, string> = {
@@ -21,7 +22,7 @@ const priorityClasses: Record<string, string> = {
   high: "border-rose-200 bg-rose-50 text-rose-700"
 };
 
-export default function AdminReportList({ reports, updatesByReport }: Props) {
+export default function AdminReportList({ reports, updatesByReport, loading }: Props) {
   const ordered = useMemo(() => {
     const getStatusWeight = (status: string) => {
       const order: Record<string, number> = {
@@ -46,10 +47,32 @@ export default function AdminReportList({ reports, updatesByReport }: Props) {
     });
   }, [reports]);
 
+  if (loading) {
+    const skeletons = Array.from({ length: 6 }).map((_, idx) => (
+      <div key={idx} className="flex animate-pulse flex-col gap-4 px-6 py-4 md:flex-row md:items-start md:justify-between">
+        <div className="w-full">
+          <div className="h-4 w-32 rounded bg-slate-200" />
+          <div className="mt-3 h-5 w-1/2 rounded bg-slate-200" />
+          <div className="mt-2 h-3 w-1/3 rounded bg-slate-200" />
+          <div className="mt-3 flex gap-2">
+            <div className="h-6 w-20 rounded bg-slate-200" />
+            <div className="h-6 w-24 rounded bg-slate-200" />
+          </div>
+        </div>
+        <div className="flex w-full flex-col gap-3 md:w-auto md:items-end">
+          <div className="h-8 w-28 rounded bg-slate-200" />
+          <div className="mt-2 h-20 w-56 rounded bg-slate-200" />
+        </div>
+      </div>
+    ));
+
+    return <div className="divide-y divide-slate-200">{skeletons}</div>;
+  }
+
   return (
     <div className="divide-y divide-slate-200">
       {ordered.slice(0, 100).map((report) => (
-        <div key={report.id} className="flex flex-col gap-4 px-6 py-4 md:flex-row md:items-start md:justify-between">
+        <div key={report.id} className={`flex flex-col gap-4 px-6 py-4 md:flex-row md:items-start md:justify-between ${report.priority === "high" ? "ring-2 ring-rose-50" : ""}`}>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">{report.tracking_code}</p>
             <p className="mt-1 font-medium text-slate-950">{report.title}</p>

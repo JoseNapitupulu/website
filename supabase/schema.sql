@@ -76,3 +76,10 @@ for all
 to authenticated
 using (true)
 with check (true);
+
+-- Recommended indexes for admin filtering and pagination
+create index if not exists idx_damage_reports_status on public.damage_reports (status);
+create index if not exists idx_damage_reports_priority on public.damage_reports (priority);
+create index if not exists idx_damage_reports_updated_at on public.damage_reports (updated_at desc);
+create index if not exists idx_damage_reports_show_in_tracking on public.damage_reports (show_in_tracking);
+create index if not exists idx_report_updates_report_id_created_at on public.report_updates (report_id, created_at desc);

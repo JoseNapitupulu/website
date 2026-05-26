@@ -15,7 +15,7 @@ export default function AdminReportsPanel({ initialReports = [], initialUpdatesB
   const [count, setCount] = useState(initialReports.length);
   const [updatesByReport, setUpdatesByReport] = useState<Record<string, ReportUpdate[]>>(initialUpdatesByReport);
   const [page, setPage] = useState(1);
-  const [limit] = useState(20);
+  const [limit, setLimit] = useState(20);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filters, setFilters] = useState<{ q?: string; status?: string; priority?: string }>({});
@@ -68,20 +68,81 @@ export default function AdminReportsPanel({ initialReports = [], initialUpdatesB
       <div className="px-0">
         {loadError ? <div className="border-b border-rose-200 bg-rose-50 px-6 py-3 text-sm text-rose-700">{loadError}</div> : null}
         {loading ? <div className="p-6 text-sm text-slate-500">Memuat...</div> : null}
-        <AdminReportList reports={reports} updatesByReport={updatesByReport} />
+        <AdminReportList reports={reports} updatesByReport={updatesByReport} loading={loading} />
 
         <div className="flex items-center justify-between border-t border-slate-200 px-6 py-4">
           <div className="text-sm text-slate-500">
             {count === 0 ? "Tidak ada laporan untuk filter ini." : `Menampilkan ${(page - 1) * limit + 1} - ${Math.min(page * limit, count)} dari ${count} laporan`}
           </div>
-          <div className="flex items-center gap-2">
-            <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-lg border px-3 py-2 text-sm">
-              Sebelumnya
-            </button>
-            <button disabled={page * limit >= count} onClick={() => setPage((p) => p + 1)} className="rounded-lg border px-3 py-2 text-sm">
-              Berikutnya
-            </button>
-          </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-slate-500">Per halaman</label>
+                <select
+                  value={String(limit)}
+                  onChange={(e) => {
+                    setLimit(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="rounded-lg border px-2 py-1 text-sm"
+                >
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="rounded-lg border px-3 py-2 text-sm">
+                  Sebelumnya
+                </button>
+
+                {/* numbered pages */}
+                {(() => {
+                  const totalPages = Math.max(1, Math.ceil(count / limit));
+                  const windowSize = 7; // show up to 7 page buttons
+                  let start = Math.max(1, page - Math.floor(windowSize / 2));
+                  let end = start + windowSize - 1;
+                  if (end > totalPages) {
+                    end = totalPages;
+                    start = Math.max(1, end - windowSize + 1);
+                  }
+
+                  const pages = [] as number[];
+                  for (let i = start; i <= end; i++) pages.push(i);
+
+                  return (
+                    <div className="flex items-center gap-1">
+                      {start > 1 ? (
+                        <button onClick={() => setPage(1)} className="rounded-lg border px-2 py-1 text-sm">
+                          1
+                        </button>
+                      ) : null}
+                      {start > 2 ? <div className="px-2">…</div> : null}
+                      {pages.map((p) => (
+                        <button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          className={`rounded-lg border px-2 py-1 text-sm ${p === page ? "bg-slate-700 text-white" : ""}`}
+                        >
+                          {p}
+                        </button>
+                      ))}
+                      {end < totalPages - 1 ? <div className="px-2">…</div> : null}
+                      {end < totalPages ? (
+                        <button onClick={() => setPage(totalPages)} className="rounded-lg border px-2 py-1 text-sm">
+                          {totalPages}
+                        </button>
+                      ) : null}
+                    </div>
+                  );
+                })()}
+
+                <button disabled={page * limit >= count} onClick={() => setPage((p) => p + 1)} className="rounded-lg border px-3 py-2 text-sm">
+                  Berikutnya
+                </button>
+              </div>
+            </div>
         </div>
       </div>
     </div>
