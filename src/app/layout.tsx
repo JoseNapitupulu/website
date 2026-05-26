@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     canonical: "/"
   },
   keywords: ["lapor kerusakan", "kampus", "laporan fasilitas", "pelaporan kampus", "maintenance"],
-  authors: [{ name: "IT Del", url: "https://laponsitdel.ifs25026.fun/" }],
+  authors: [{ name: "IT Del", url: "https://laporitdel.ifs25026.fun/" }],
   robots: {
     index: true,
     follow: true,
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     description: "Laporkan kerusakan fasilitas kampus dan lacak status penanganan.",
     images: ["/it-del-logo.png"]
   },
-  metadataBase: process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL) : new URL("https://laponsitdel.ifs25026.fun/")
+  metadataBase: process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL) : new URL("https://laporitdel.ifs25026.fun/")
 };
 
 export default function RootLayout({

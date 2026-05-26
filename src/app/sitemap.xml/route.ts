@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { listVisibleReports } from "@/lib/reports";
 
 export async function GET() {
-  const base = (process.env.NEXT_PUBLIC_APP_URL || "https://laponsitdel.ifs25026.fun").replace(/\/$/, "");
+  const base = (process.env.NEXT_PUBLIC_APP_URL || "https://laporitdel.ifs25026.fun").replace(/\/$/, "");
 
   const staticUrls = ["/", "/laporan", "/tracking", "/developer"];
 
