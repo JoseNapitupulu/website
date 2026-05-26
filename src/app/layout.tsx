@@ -6,14 +6,39 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Lapor Kerusakan Kampus",
-  description: "Sistem pelaporan kerusakan fasilitas kampus dengan tracking status dan dashboard admin."
+  description: "Sistem pelaporan kerusakan fasilitas kampus dengan tracking status dan dashboard admin.",
+  keywords: ["lapor kerusakan", "kampus", "laporan fasilitas", "pelaporan kampus", "maintenance"],
+  authors: [{ name: "IT Del", url: "https://it.del.example" }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true
+    }
+  },
+  openGraph: {
+    title: "Lapor Kerusakan Kampus - IT Del",
+    description: "Laporkan kerusakan fasilitas kampus, lacak status penanganan, dan pantau progress.",
+    siteName: "Lapor Kerusakan Kampus",
+    type: "website",
+    locale: "id_ID",
+    images: [
+      {
+        url: "/it-del-logo.png",
+        width: 800,
+        height: 800
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Lapor Kerusakan Kampus",
+    description: "Laporkan kerusakan fasilitas kampus dan lacak status penanganan.",
+    images: ["/it-del-logo.png"]
+  },
+  metadataBase: process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL) : undefined
 };
-// Add favicon/icon entries using the provided logo in /public
-metadata.icons = [
-  { rel: "icon", url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-  { rel: "icon", url: "/it-del-logo.png", sizes: "64x64", type: "image/png" },
-  { rel: "apple-touch-icon", url: "/apple-touch-icon.png", sizes: "180x180" }
-];
 
 export default function RootLayout({
   children
@@ -23,6 +48,16 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body suppressHydrationWarning>
+        {/* JSON-LD Organization structured data for SEO */}
+        <script dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Lapor Kerusakan Kampus",
+            url: process.env.NEXT_PUBLIC_APP_URL || "",
+            logo: `${process.env.NEXT_PUBLIC_APP_URL || ""}/it-del-logo.png`
+          })
+        }} />
         <header className="border-b border-slate-200 bg-white/85 backdrop-blur">
           <div className="page-shell flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <Link href="/" className="flex items-center gap-3">
