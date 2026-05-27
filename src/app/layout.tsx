@@ -4,25 +4,37 @@ import Image from "next/image";
 
 import "./globals.css";
 
+const siteUrl = new URL("https://laporitdel.ifs25026.fun");
+
 export const metadata: Metadata = {
-  title: "Lapor Kerusakan Kampus",
+  metadataBase: siteUrl,
+  applicationName: "Lapor Kerusakan Kampus",
+  title: {
+    default: "Lapor Kerusakan Kampus",
+    template: "%s | Lapor Kerusakan Kampus"
+  },
   description: "Sistem pelaporan kerusakan fasilitas kampus dengan tracking status dan dashboard admin.",
+  keywords: ["lapor kerusakan", "kampus", "laporan fasilitas", "pelaporan kampus", "maintenance"],
   alternates: {
     canonical: "/"
   },
-  keywords: ["lapor kerusakan", "kampus", "laporan fasilitas", "pelaporan kampus", "maintenance"],
-  authors: [{ name: "IT Del", url: "https://laporitdel.ifs25026.fun/" }],
+  authors: [{ name: "IT Del", url: siteUrl.toString() }],
+  category: "technology",
   robots: {
     index: true,
     follow: true,
     googleBot: {
       index: true,
-      follow: true
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1
     }
   },
   openGraph: {
-    title: "Lapor Kerusakan Kampus - IT Del",
+    title: "Lapor Kerusakan Kampus",
     description: "Laporkan kerusakan fasilitas kampus, lacak status penanganan, dan pantau progress.",
+    url: "/",
     siteName: "Lapor Kerusakan Kampus",
     type: "website",
     locale: "id_ID",
@@ -30,7 +42,8 @@ export const metadata: Metadata = {
       {
         url: "/it-del-logo.png",
         width: 800,
-        height: 800
+        height: 800,
+        alt: "Logo Lapor Kerusakan Kampus"
       }
     ]
   },
@@ -40,7 +53,12 @@ export const metadata: Metadata = {
     description: "Laporkan kerusakan fasilitas kampus dan lacak status penanganan.",
     images: ["/it-del-logo.png"]
   },
-  metadataBase: process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL) : new URL("https://laporitdel.ifs25026.fun/")
+  icons: {
+    icon: [{ url: "/favicon.ico", type: "image/x-icon" }],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png"
+  },
+  manifest: "/site.webmanifest"
 };
 
 export default function RootLayout({
