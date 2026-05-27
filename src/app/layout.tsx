@@ -14,10 +14,10 @@ export const metadata: Metadata = {
     template: "%s | Lapor Kerusakan Kampus"
   },
   description: "Sistem pelaporan kerusakan fasilitas kampus dengan tracking status dan dashboard admin.",
-  keywords: ["lapor kerusakan", "kampus", "laporan fasilitas", "pelaporan kampus", "maintenance"],
   alternates: {
     canonical: "/"
   },
+  keywords: ["lapor kerusakan", "kampus", "laporan fasilitas", "pelaporan kampus", "maintenance"],
   authors: [{ name: "IT Del", url: siteUrl.toString() }],
   category: "technology",
   robots: {
